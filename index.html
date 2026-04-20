@@ -104,7 +104,13 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .chip-dot { width: 7px; height: 7px; border-radius: 2px; margin-right: 8px; flex-shrink: 0; }
 
 /* ── STAT CARDS ── */
-.stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.stat-row { 
+  display: grid; 
+  grid-template-columns: repeat(4, 1fr); 
+  gap: 12px; 
+  flex-shrink: 0; /* Prevents stats from squishing */
+}
+  
 .stat-card {
   background: var(--white); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 16px 18px;
@@ -121,9 +127,12 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 
 /* ── PANEL ── */
 .panel {
-  background: var(--white); border: 1px solid var(--border);
-  border-radius: var(--radius); box-shadow: var(--shadow-sm);
+  background: var(--white); 
+  border: 1px solid var(--border);
+  border-radius: var(--radius); 
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
+  flex-shrink: 0; /* Prevents Flexbox from squishing the panel */
 }
 .panel-header {
   display: flex; align-items: center; gap: 10px;
