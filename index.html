@@ -365,7 +365,7 @@ document.addEventListener('DOMContentLoaded', loadData);
 
 // ── TOKEN AUTH ────────────────────────────────────────────────
 // Read ?token= from URL. If missing, show PIN entry screen.
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwZZrZppRJigvHLi7KRyTH81F8smiFGltWlom4wNQi7QaSXWMTynRgycYfzN1uAa8QA/exec'; // ← paste your /exec URL
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzoMl4M9P8D1sh8ReuQsbHoQuqbwYWa6CkoO5tAGBl4DhRX3LufnVCh-gOQViHj36Qk/exec'; // ← paste your /exec URL
 
 function getToken() {
   return new URLSearchParams(window.location.search).get('token') || '';
