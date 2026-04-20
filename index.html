@@ -41,7 +41,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 /* ── LAYOUT ── */
 .app { display: grid; grid-template-rows: 52px 1fr; height: 100vh; }
 .main { display: grid; grid-template-columns: 220px 1fr; overflow: hidden; }
-.content { overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
+.content { overflow-y: auto; overflow-x: hidden; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
 
 /* ── TOPBAR ── */
 .topbar {
@@ -288,13 +288,13 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 
 /* ── MODAL ── */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-.modal { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 540px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+.modal { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 700px; max-width: 95vw; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
 .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
 .modal-sub { font-size: 12px; color: var(--text3); margin-bottom: 20px; }
 .modal-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text3); margin-bottom: 5px; margin-top: 12px; }
 .modal-input { width: 100%; border: 1px solid var(--border2); border-radius: 6px; padding: 8px 11px; font-size: 13px; font-family: var(--font); color: var(--text); outline: none; transition: border-color 0.15s; }
 .modal-input:focus { border-color: var(--accent); }
-textarea.modal-input { resize: vertical; min-height: 120px; line-height: 1.55; }
+textarea.modal-input { resize: vertical; min-height: 200px; line-height: 1.55; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
 
 /* ── UTILS ── */
@@ -333,6 +333,7 @@ textarea.modal-input { resize: vertical; min-height: 120px; line-height: 1.55; }
     <textarea class="modal-input" id="emailBody"></textarea>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-outline" onclick="copyEmailBody()">⧉ Copy Body</button>
       <a class="btn btn-primary" id="sendBtn" href="#" target="_blank" onclick="closeModal()">Open in Email ↗</a>
     </div>
   </div>
@@ -342,15 +343,43 @@ textarea.modal-input { resize: vertical; min-height: 120px; line-height: 1.55; }
 // ── STATE ────────────────────────────────────────────────────
 const S = {
   data: null,
-  view: 'aging',          // aging | agents
+  view: 'aging',          // aging | agents | settings
   search: '',
   itemFilter: null,
   expandedBuckets: new Set(['1-30']),
   expandedItems: new Set(),
   expandedCustomers: new Set(),
   agentFilter: null,
-  sortAgent: { col: 'totalAR', dir: -1 }
+  sortAgent: { col: 'totalAR', dir: -1 },
+  // Email template — persisted in localStorage
+  template: loadTemplate()
 };
+
+const DEFAULT_TEMPLATE = {
+  subject: 'Outstanding Invoice #{{invoiceNum}} — Balance Due {{balance}}',
+  body: `Hi {{customerName}},
+
+This is a friendly reminder that Invoice #{{invoiceNum}} has an outstanding balance of {{balance}}{{dueDateLine}}.
+
+Items on this invoice:
+{{itemList}}
+
+Please don't hesitate to reach out with any questions.`,
+  signature: `Thank you,\nJPAR Real Estate`
+};
+
+function loadTemplate() {
+  try {
+    const saved = localStorage.getItem('jpar_email_template');
+    return saved ? JSON.parse(saved) : { ...DEFAULT_TEMPLATE };
+  } catch(e) {
+    return { ...DEFAULT_TEMPLATE };
+  }
+}
+
+function saveTemplate() {
+  try { localStorage.setItem('jpar_email_template', JSON.stringify(S.template)); } catch(e) {}
+}
 
 const BUCKETS = [
   { key: '1-30',  label: '1–30 Days',      min: 1,  max: 30,  pill: 'pill-green',  totalClass: 'green' },
@@ -453,8 +482,9 @@ function topbar() {
 // ── SIDEBAR ───────────────────────────────────────────────────
 function sidebar() {
   const views = [
-    { id:'aging',  label:'AR Aging',    icon:'≡' },
-    { id:'agents', label:'By Agent',    icon:'◉', badge: S.data.agents.filter(a=>a.agentId).length },
+    { id:'aging',    label:'AR Aging',    icon:'≡' },
+    { id:'agents',   label:'By Agent',    icon:'◉', badge: S.data.agents.filter(a=>a.agentId).length },
+    { id:'settings', label:'Settings',    icon:'⚙' },
   ];
 
   const navHtml = views.map(v => `
@@ -488,7 +518,9 @@ function sidebar() {
 
 // ── CONTENT ROUTER ────────────────────────────────────────────
 function content() {
-  return S.view === 'agents' ? agentView() : agingView();
+  if (S.view === 'agents')   return agentView();
+  if (S.view === 'settings') return settingsView();
+  return agingView();
 }
 
 // ── AGING VIEW ────────────────────────────────────────────────
@@ -568,7 +600,7 @@ function agingView() {
                       ${inv.isAgentCust ? '<span class="cust-tag">Agent</span>' : ''}
                       <div style="font-size:11px;color:var(--text3);margin-top:1px">#${inv.invoiceNum}</div>
                     </div>
-                    <div style="font-size:12px;color:var(--text2)">${inv.email || '—'}</div>
+                    <div style="font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px" title="${inv.email||''}">${inv.email || '—'}</div>
                     <div class="money ${inv.balance>=5000?'red':inv.balance>=1000?'orange':'normal'}">${fmt$(inv.balance)}</div>
                     <div>${daysBadge(inv.daysOut)}</div>
                     <div style="font-size:12px;color:var(--text2)">${inv.dueDate}</div>
@@ -638,27 +670,58 @@ function invoiceDetail(inv) {
       <td style="color:var(--text3)">${li.className||'—'}</td>
     </tr>`).join('') || `<tr><td colspan="4" style="color:var(--text3)">No line items</td></tr>`;
 
-  // Pending transactions for this customer's agent
+  // Group pending transactions by WS_ID
   const pending = S.data.pendingByAgent?.[inv.agentId] || [];
-  const pendingHtml = pending.length === 0 ? '' : `
+  const grouped = {};
+  pending.forEach(p => {
+    const key = p.wsId || p.address || 'unknown';
+    if (!grouped[key]) grouped[key] = { wsId: p.wsId, address: p.address, closeDate: p.closeDate, agentName: p.agentName, items: [] };
+    grouped[key].items.push(p);
+  });
+
+  const pendingHtml = Object.keys(grouped).length === 0 ? '' : `
     <div class="pending-section">
       <div class="pending-title">⏳ Pending Transactions — ${inv.agentName}</div>
-      <div class="pending-row" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);border-bottom:2px solid var(--border)">
-        <div>Close Date</div><div>Address</div><div>Agent</div><div>Item</div><div style="text-align:right">Amount</div>
-      </div>
-      ${pending.map(p => `
-        <div class="pending-row">
-          <div style="color:var(--text3)">${p.closeDate}</div>
-          <div style="font-weight:500">${p.address}</div>
-          <div style="color:var(--text2)">${p.agentName}</div>
-          <div><span style="background:var(--orange-lt);color:var(--orange);font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px">${p.itemName}</span></div>
-          <div class="money" style="text-align:right;color:${p.amount<0?'var(--red)':'var(--green)'}">${fmt$(p.amount)}</div>
-        </div>`).join('')}
+      ${Object.values(grouped).map(tx => {
+        const totalAmt = tx.items.reduce((s,i) => s+i.amount, 0);
+        return `
+        <div style="margin-bottom:12px;border:1px solid var(--border);border-radius:6px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:110px 1fr 1fr auto auto;align-items:center;padding:8px 12px;background:var(--bg);gap:12px;border-bottom:1px solid var(--border)">
+            <div style="font-size:11px;color:var(--text3)">${tx.closeDate}</div>
+            <div style="font-weight:600;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px"
+              onclick="copyText('${esc(tx.address)}')" title="Click to copy address">
+              ${tx.address}
+              <span style="font-size:10px;color:var(--text3)">⧉</span>
+            </div>
+            <div style="font-size:11px;color:var(--text2)">${tx.agentName}</div>
+            ${tx.wsId ? `<div style="font-family:var(--mono);font-size:11px;cursor:pointer;background:var(--accent-lt);color:var(--accent);padding:2px 7px;border-radius:4px;display:flex;align-items:center;gap:4px"
+              onclick="copyText('${tx.wsId}')" title="Click to copy WS ID">
+              WS#${tx.wsId} <span style="font-size:10px">⧉</span>
+            </div>` : ''}
+            <div class="money" style="text-align:right;color:${totalAmt<0?'var(--red)':'var(--green)'};font-size:13px">${fmt$(totalAmt)}</div>
+          </div>
+          ${tx.items.map(item => `
+            <div style="display:grid;grid-template-columns:110px 1fr 1fr auto auto;align-items:center;padding:6px 12px;gap:12px;border-bottom:1px solid var(--border)">
+              <div></div>
+              <div></div>
+              <div><span style="background:var(--orange-lt);color:var(--orange);font-size:10px;font-weight:700;padding:1px 7px;border-radius:4px">${item.itemName}</span></div>
+              <div></div>
+              <div class="money" style="text-align:right;color:${item.amount<0?'var(--red)':'var(--green)'};font-size:12px">${fmt$(item.amount)}</div>
+            </div>`).join('')}
+        </div>`;
+      }).join('')}
     </div>`;
 
   const qboInvUrl  = `https://app.qbo.intuit.com/app/invoice?txnId=${inv.invoiceId}`;
   const qboCustUrl = `https://app.qbo.intuit.com/app/customerdetail?nameId=${inv.customerId}`;
   const qboLink = (url, label) => `<a href="${url}" target="_blank" style="color:var(--accent);text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:3px">${label} <span style="font-size:10px;opacity:0.7">↗</span></a>`;
+
+  // Copyable email helper
+  const copyableEmail = inv.email
+    ? `<span style="cursor:pointer;display:inline-flex;align-items:center;gap:5px" onclick="copyText('${esc(inv.email)}')" title="Click to copy">
+        ${inv.email} <span style="font-size:10px;color:var(--text3)">⧉</span>
+       </span>`
+    : '—';
 
   return `
     <div class="invoice-detail slide-in">
@@ -674,8 +737,8 @@ function invoiceDetail(inv) {
         <div>
           <div class="detail-section-title">Customer</div>
           <div class="detail-row"><span class="detail-key">Name</span><span class="detail-val">${qboLink(qboCustUrl, inv.customerName)}</span></div>
-          <div class="detail-row"><span class="detail-key">Email</span><span class="detail-val" style="font-size:11px">${inv.email||'—'}</span></div>
-          <div class="detail-row"><span class="detail-key">Total Balance</span><span class="detail-val">${fmt$(inv.custBalance)}</span></div>
+          <div class="detail-row"><span class="detail-key">Email</span><span class="detail-val" style="font-size:11px">${copyableEmail}</span></div>
+          <div class="detail-row"><span class="detail-key">Total Customer Balance</span><span class="detail-val">${fmt$(inv.custBalance)}</span></div>
           <div class="detail-row"><span class="detail-key">Agent</span><span class="detail-val">${inv.agentName||'—'}</span></div>
           <div class="detail-row"><span class="detail-key">Office</span><span class="detail-val" style="font-size:11px">${inv.officeName||'—'}</span></div>
         </div>
@@ -835,19 +898,152 @@ function sortAgent(col) {
   refreshContent();
 }
 
+// ── SETTINGS VIEW ─────────────────────────────────────────────
+function settingsView() {
+  const t = S.template;
+  return `
+    <div class="panel fade-in" style="max-width:720px">
+      <div class="panel-header">
+        <div class="panel-title">⚙ Email Template Settings</div>
+        <div class="panel-sub">Customise the default reminder email sent to customers</div>
+      </div>
+      <div style="padding:24px;display:flex;flex-direction:column;gap:20px">
+
+        <div>
+          <div class="detail-section-title" style="margin-bottom:8px">Subject Line</div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:6px">
+            Variables: <code style="background:var(--bg);padding:1px 5px;border-radius:3px">{{invoiceNum}}</code>
+            <code style="background:var(--bg);padding:1px 5px;border-radius:3px">{{balance}}</code>
+            <code style="background:var(--bg);padding:1px 5px;border-radius:3px">{{customerName}}</code>
+            <code style="background:var(--bg);padding:1px 5px;border-radius:3px">{{dueDate}}</code>
+          </div>
+          <input id="tpl_subject" class="modal-input" type="text" value="${esc(t.subject)}"
+            style="width:100%;font-size:13px">
+        </div>
+
+        <div>
+          <div class="detail-section-title" style="margin-bottom:8px">Email Body</div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:6px">
+            Additional variables: <code style="background:var(--bg);padding:1px 5px;border-radius:3px">{{dueDateLine}}</code> (auto: ", which was due on X")
+            <code style="background:var(--bg);padding:1px 5px;border-radius:3px">{{itemList}}</code> (auto: bullet list of line items)
+          </div>
+          <textarea id="tpl_body" class="modal-input" rows="10"
+            style="width:100%;font-size:13px;line-height:1.6">${esc(t.body)}</textarea>
+        </div>
+
+        <div>
+          <div class="detail-section-title" style="margin-bottom:8px">Signature</div>
+          <textarea id="tpl_signature" class="modal-input" rows="3"
+            style="width:100%;font-size:13px;line-height:1.6">${esc(t.signature)}</textarea>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="btn btn-primary" onclick="saveTemplateFromUI()">💾 Save Template</button>
+          <button class="btn btn-outline" onclick="resetTemplate()">↺ Reset to Default</button>
+          <div id="tpl_saved" style="font-size:12px;color:var(--green);display:none;font-weight:600">✓ Saved</div>
+        </div>
+
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:16px">
+          <div class="detail-section-title" style="margin-bottom:10px">Preview</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.7;white-space:pre-wrap;font-family:var(--mono)" id="tpl_preview">${buildPreview()}</div>
+        </div>
+
+      </div>
+    </div>`;
+}
+
+function buildPreview() {
+  const t = S.template;
+  const subject = t.subject
+    .replace('{{invoiceNum}}', '123208')
+    .replace('{{balance}}', '$356')
+    .replace('{{customerName}}', 'Sasha Jam')
+    .replace('{{dueDate}}', '3/1/2026');
+  const body = t.body
+    .replace('{{customerName}}', 'Sasha Jam')
+    .replace('{{invoiceNum}}', '123208')
+    .replace('{{balance}}', '$356')
+    .replace('{{dueDate}}', '3/1/2026')
+    .replace('{{dueDateLine}}', ', which was due on 3/1/2026')
+    .replace('{{itemList}}', '  • Office Rent: March 2026 Office Rent');
+  return `Subject: ${subject}\n\n${body}\n\n${t.signature}`;
+}
+
+function saveTemplateFromUI() {
+  S.template = {
+    subject:   document.getElementById('tpl_subject')?.value   || DEFAULT_TEMPLATE.subject,
+    body:      document.getElementById('tpl_body')?.value      || DEFAULT_TEMPLATE.body,
+    signature: document.getElementById('tpl_signature')?.value || DEFAULT_TEMPLATE.signature,
+  };
+  saveTemplate();
+  // Update preview
+  const prev = document.getElementById('tpl_preview');
+  if (prev) prev.textContent = buildPreview();
+  // Show saved confirmation
+  const saved = document.getElementById('tpl_saved');
+  if (saved) { saved.style.display = 'block'; setTimeout(() => saved.style.display='none', 2000); }
+}
+
+function resetTemplate() {
+  if (!confirm('Reset to default template?')) return;
+  S.template = { ...DEFAULT_TEMPLATE };
+  saveTemplate();
+  refreshContent(); // re-render settings view with defaults
+}
+
 // ── EMAIL MODAL ───────────────────────────────────────────────
 function openEmail(invoiceId) {
   const inv = S.data.invoices.find(i => i.invoiceId === invoiceId);
   if (!inv) return;
+  const t = S.template;
+
+  // Build subject from template
+  const subject = t.subject
+    .replace('{{invoiceNum}}',   inv.invoiceNum)
+    .replace('{{balance}}',      fmt$(inv.balance))
+    .replace('{{customerName}}', inv.customerName)
+    .replace('{{dueDate}}',      inv.dueDate || '');
+
+  // Build item list
+  const itemList = inv.lineItems.map(li => `  • ${li.itemName}: ${li.description}`).join('\n')
+    || '  (see invoice for details)';
+  const dueDateLine = inv.dueDate ? `, which was due on ${inv.dueDate}` : '';
+
+  // Build body from template
+  const body = t.body
+    .replace('{{customerName}}', inv.customerName)
+    .replace('{{invoiceNum}}',   inv.invoiceNum)
+    .replace('{{balance}}',      fmt$(inv.balance))
+    .replace('{{dueDate}}',      inv.dueDate || '')
+    .replace('{{dueDateLine}}',  dueDateLine)
+    .replace('{{itemList}}',     itemList);
+
+  const full = body + '\n\n' + t.signature;
+
   document.getElementById('modalSub').textContent = `Invoice #${inv.invoiceNum} — ${inv.customerName}`;
-  document.getElementById('emailTo').value = inv.email || '';
-  document.getElementById('emailSubject').value = `Outstanding Invoice #${inv.invoiceNum} — Balance Due ${fmt$(inv.balance)}`;
-  const items = inv.lineItems.map(li => `  • ${li.itemName}: ${li.description}`).join('\n');
-  document.getElementById('emailBody').value =
-    `Hi ${inv.customerName},\n\nThis is a friendly reminder that Invoice #${inv.invoiceNum} has an outstanding balance of ${fmt$(inv.balance)}${inv.dueDate ? `, which was due on ${inv.dueDate}` : ''}.\n\nItems on this invoice:\n${items||'  (see invoice for details)'}\n\nPlease don't hesitate to reach out with any questions.\n\nThank you,\nJPAR Real Estate`;
+  document.getElementById('emailTo').value      = inv.email || '';
+  document.getElementById('emailSubject').value = subject;
+  document.getElementById('emailBody').value    = full;
   updateMailto();
   document.getElementById('emailModal').style.display = 'flex';
 }
+// ── COPY HELPERS ─────────────────────────────────────────────
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    // Brief visual feedback — show a toast
+    const toast = document.createElement('div');
+    toast.textContent = '✓ Copied';
+    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111827;color:white;padding:8px 18px;border-radius:6px;font-size:12px;font-weight:600;z-index:9999;animation:fadeIn 0.2s ease';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 1800);
+  });
+}
+
+function copyEmailBody() {
+  const body = document.getElementById('emailBody')?.value || '';
+  copyText(body);
+}
+
 function closeModal() { document.getElementById('emailModal').style.display = 'none'; }
 function updateMailto() {
   const to = document.getElementById('emailTo').value;
