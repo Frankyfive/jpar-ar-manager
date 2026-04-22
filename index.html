@@ -106,7 +106,10 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .chip-dot { width: 7px; height: 7px; border-radius: 2px; margin-right: 8px; flex-shrink: 0; }
 
 /* ── STAT CARDS ── */
-.stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.stat-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  flex-shrink: 0; /* Prevents stats from squishing */
+}
 .stat-card {
   background: var(--white); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 16px 18px;
@@ -126,6 +129,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
   background: var(--white); border: 1px solid var(--border);
   border-radius: var(--radius); box-shadow: var(--shadow-sm);
   overflow: hidden;
+  flex-shrink: 0; /* Prevents Flexbox from squishing the panel */
 }
 .panel-header {
   display: flex; align-items: center; gap: 10px;
@@ -163,52 +167,51 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .bucket-count { font-size: 12px; color: var(--text3); font-family: var(--mono); }
 .bucket-total { font-size: 14px; font-weight: 700; font-family: var(--mono); }
 
-/* ── ITEM GROUP ROWS ── */
-.item-group-row {
+/* ── CUSTOMER GROUP ROWS (was item-group, now customer-first) ── */
+.cust-group-row {
   display: grid;
-  grid-template-columns: 32px 220px 1fr 120px 90px 90px 80px;
+  grid-template-columns: 32px 1fr 140px 100px 90px 80px;
   align-items: center; padding: 8px 18px;
   border-bottom: 1px solid var(--border);
   cursor: pointer; transition: background 0.1s; background: var(--white);
 }
-.item-group-row:hover { background: #fafbff; }
-.item-group-row.open { background: var(--accent-lt); }
-.item-group-chevron { color: var(--text3); font-size: 10px; transition: transform 0.18s; }
-.item-group-row.open .item-group-chevron { transform: rotate(90deg); color: var(--accent); }
-.item-group-name { font-weight: 600; font-size: 13px; }
-.item-group-row.open .item-group-name { color: var(--accent); }
-.item-group-bar-wrap { padding-right: 20px; }
-.item-group-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
-.item-group-bar-fill { height: 100%; border-radius: 2px; background: var(--accent); }
+.cust-group-row:hover { background: #fafbff; }
+.cust-group-row.open { background: var(--accent-lt); }
+.cust-group-chevron { color: var(--text3); font-size: 10px; transition: transform 0.18s; }
+.cust-group-row.open .cust-group-chevron { transform: rotate(90deg); color: var(--accent); }
+.cust-group-name { font-weight: 600; font-size: 13px; }
+.cust-group-row.open .cust-group-name { color: var(--accent); }
+.cust-group-email { font-size: 11px; color: var(--text3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cust-tag { display: inline-block; font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px; margin-left: 6px; background: var(--purple-lt); color: var(--purple); }
+.cust-tag.non-agent { background: var(--gray-tag-lt); color: var(--gray-tag); }
+
 .col-head { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); }
-.table-head {
+.table-head-cust {
   display: grid;
-  grid-template-columns: 32px 220px 1fr 120px 90px 90px 80px;
+  grid-template-columns: 32px 1fr 140px 100px 90px 80px;
   padding: 8px 18px; border-bottom: 2px solid var(--border); background: var(--bg);
 }
 
-/* ── CUSTOMER ROWS ── */
-.customer-section { background: var(--bg); border-bottom: 1px solid var(--border); }
-.customer-row {
+/* ── INVOICE ROWS (inside expanded customer) ── */
+.inv-item-section { background: var(--bg); border-bottom: 1px solid var(--border); }
+.inv-item-row {
   display: grid;
-  grid-template-columns: 52px 1fr 180px 120px 100px 90px 80px 120px;
+  grid-template-columns: 52px 1fr 160px 120px 100px 90px 80px 50px;
   align-items: center; padding: 9px 18px;
   border-bottom: 1px solid var(--border);
   cursor: pointer; transition: background 0.1s; background: var(--white);
 }
-.customer-row:hover { background: var(--bg); }
-.customer-row.open { background: #f8faff; }
-.cust-chevron { color: var(--text3); font-size: 10px; transition: transform 0.18s; padding-left: 18px; }
-.customer-row.open .cust-chevron { transform: rotate(90deg); }
-.cust-name { font-weight: 600; font-size: 13px; }
-.cust-tag { display: inline-block; font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px; margin-left: 6px; background: var(--purple-lt); color: var(--purple); }
-.cust-tag.non-agent { background: var(--gray-tag-lt); color: var(--gray-tag); }
+.inv-item-row:hover { background: var(--bg); }
+.inv-item-row.open { background: #f8faff; }
+.inv-chevron { color: var(--text3); font-size: 10px; transition: transform 0.18s; padding-left: 18px; }
+.inv-item-row.open .inv-chevron { transform: rotate(90deg); }
+
 .money { font-family: var(--mono); font-weight: 600; }
 .money.red    { color: var(--red); }
 .money.orange { color: var(--orange); }
 .money.normal { color: var(--text); }
 
-/* Search visibility — hidden rows carry this class (live search) */
+/* Search visibility */
 .hit-hidden { display: none !important; }
 
 /* ── DAYS BADGE ── */
@@ -334,7 +337,7 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw-lhZCeptUf5WI
 
 // ── DEFAULT EMAIL TEMPLATE ────────────────────────────────────
 const DEFAULT_TEMPLATE = {
-  subject:   'Outstanding Invoice #{{invoiceNum}} — Balance Due {{balance}}',
+  subject:   'Outstanding Invoice #{{invoiceNum}} - Balance Due {{balance}}',
   body:      'Hi {{customerName}},\n\nThis is a friendly reminder that Invoice #{{invoiceNum}} has an outstanding balance of {{balance}}{{dueDateLine}}.\n\nItems on this invoice:\n{{itemList}}\n\nPlease don\'t hesitate to reach out with any questions.',
   signature: 'Thank you,\nJPAR Real Estate'
 };
@@ -356,17 +359,17 @@ const S = {
   search: '',
   itemFilter: null,
   expandedBuckets: new Set(['1-30']),
-  expandedItems: new Set(),
-  expandedCustomers: new Set(),
+  expandedCustomers: new Set(),   // customer-level groups inside buckets
+  expandedInvoices: new Set(),    // individual invoice detail panels
   agentFilter: null,
   sortAgent: { col: 'totalAR', dir: -1 },
   template: loadTemplate()
 };
 
 const BUCKETS = [
-  { key: '1-30',  label: '1–30 Days',   pill: 'pill-green',  totalClass: 'green'  },
-  { key: '31-60', label: '31–60 Days',  pill: 'pill-yellow', totalClass: 'yellow' },
-  { key: '61-90', label: '61–90 Days',  pill: 'pill-orange', totalClass: 'orange' },
+  { key: '1-30',  label: '1-30 Days',   pill: 'pill-green',  totalClass: 'green'  },
+  { key: '31-60', label: '31-60 Days',  pill: 'pill-yellow', totalClass: 'yellow' },
+  { key: '61-90', label: '61-90 Days',  pill: 'pill-orange', totalClass: 'orange' },
   { key: '91+',   label: '91+ Days',    pill: 'pill-red',    totalClass: 'red'    },
   { key: 'future',label: 'Not Yet Due', pill: 'pill-green',  totalClass: 'accent' },
 ];
@@ -442,7 +445,7 @@ function refreshContent() {
     mc.innerHTML = content();
     bindModal();
     bindSearch();
-    applySearch(); // re-apply current filter against the freshly rendered rows
+    applySearch();
   }
 }
 
@@ -499,14 +502,16 @@ function content() {
   return agingView();
 }
 
-// ── AGING VIEW ────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+//  AGING VIEW  (CUSTOMER → ITEMS hierarchy)
+// ══════════════════════════════════════════════════════════════
 function agingView() {
   const { summary } = S.data;
   const statCards = [
     { label:'Total AR',   value: fmt$(summary.totalAR),   sub: `${summary.totalInvoices} open invoices`, cls:'accent' },
     { label:'91+ Days',   value: fmt$(summary.bucket91),  sub: `${summary.count91} invoices`,            cls:'red'    },
-    { label:'61–90 Days', value: fmt$(summary.bucket61),  sub: `${summary.count61} invoices`,            cls:'orange' },
-    { label:'31–60 Days', value: fmt$(summary.bucket31),  sub: `${summary.count31} invoices`,            cls:'yellow' },
+    { label:'61-90 Days', value: fmt$(summary.bucket61),  sub: `${summary.count61} invoices`,            cls:'orange' },
+    { label:'31-60 Days', value: fmt$(summary.bucket31),  sub: `${summary.count31} invoices`,            cls:'yellow' },
   ];
   const statsHtml = statCards.map(c => `
     <div class="stat-card ${c.cls}">
@@ -515,83 +520,100 @@ function agingView() {
       <div class="stat-sub">${c.sub}</div>
     </div>`).join('');
 
-  // NOTE: search is NOT applied here anymore — it's applied live against the DOM.
   const invoices = filteredInvoices();
+
+  // Group: bucket → customerName → invoices
   const bucketed = {};
   BUCKETS.forEach(b => { bucketed[b.key] = {}; });
   invoices.forEach(inv => {
     const b = getBucket(inv.daysOut);
     if (!bucketed[b]) return;
-    const iName = inv.itemNames[0] || 'Other';
-    if (!bucketed[b][iName]) bucketed[b][iName] = [];
-    bucketed[b][iName].push(inv);
+    const cName = inv.customerName || 'Unknown';
+    if (!bucketed[b][cName]) bucketed[b][cName] = [];
+    bucketed[b][cName].push(inv);
   });
 
+  // Determine expand/collapse all state
+  const allBucketKeys = BUCKETS.map(b => b.key).filter(k => {
+    const entries = Object.entries(bucketed[k]);
+    return entries.flatMap(([,invs]) => invs).length > 0;
+  });
+  const allExpanded = allBucketKeys.length > 0 && allBucketKeys.every(k => S.expandedBuckets.has(k));
+
   const bucketsHtml = BUCKETS.map(b => {
-    const itemEntries = Object.entries(bucketed[b.key]);
-    const bucketTotal = itemEntries.flatMap(([,invs]) => invs).reduce((s,i) => s+i.balance, 0);
-    const bucketCount = itemEntries.flatMap(([,invs]) => invs).length;
+    const custEntries = Object.entries(bucketed[b.key]);
+    const bucketTotal = custEntries.flatMap(([,invs]) => invs).reduce((s,i) => s+i.balance, 0);
+    const bucketCount = custEntries.flatMap(([,invs]) => invs).length;
     if (bucketCount === 0) return '';
     const isOpen = S.expandedBuckets.has(b.key);
-    const maxItemTotal = Math.max(...itemEntries.map(([,invs]) => invs.reduce((s,i)=>s+i.balance,0)), 1);
 
-    const itemsHtml = !isOpen ? '' : `
+    const maxCustTotal = Math.max(...custEntries.map(([,invs]) => invs.reduce((s,i)=>s+i.balance,0)), 1);
+
+    const custsHtml = !isOpen ? '' : `
       <div class="slide-in">
-        <div class="table-head">
-          <div></div><div class="col-head">Item / Customer</div>
-          <div class="col-head">Description</div><div class="col-head">Balance</div>
-          <div class="col-head">Days Out</div><div class="col-head">Due Date</div><div class="col-head"></div>
+        <div class="table-head-cust">
+          <div></div>
+          <div class="col-head">Customer</div>
+          <div class="col-head">Balance</div>
+          <div class="col-head">Invoices</div>
+          <div class="col-head">Oldest</div>
+          <div class="col-head"></div>
         </div>
-        ${itemEntries.sort((a,b2) =>
+        ${custEntries.sort((a,b2) =>
           b2[1].reduce((s,i)=>s+i.balance,0) - a[1].reduce((s,i)=>s+i.balance,0)
-        ).map(([iName, invs]) => {
-          const itemTotal = invs.reduce((s,i) => s+i.balance, 0);
-          const itemKey = b.key + '||' + iName;
-          const itemOpen = S.expandedItems.has(itemKey);
-          const custHtml = !itemOpen ? '' : `
-            <div class="customer-section slide-in">
+        ).map(([cName, invs]) => {
+          const custTotal = invs.reduce((s,i) => s+i.balance, 0);
+          const custKey = b.key + '||' + cName;
+          const custOpen = S.expandedCustomers.has(custKey);
+          const oldestDays = Math.max(...invs.map(i => i.daysOut || 0));
+          const isAgent = invs.some(i => !!i.agentId);
+          const searchBlob = [
+            cName, ...invs.flatMap(i => [i.invoiceNum, i.email, i.agentName, i.officeName, ...(i.itemNames||[])])
+          ].filter(Boolean).join(' ').toLowerCase();
+
+          // Invoice rows inside customer
+          const invHtml = !custOpen ? '' : `
+            <div class="inv-item-section slide-in">
               ${invs.sort((a,bv) => bv.balance - a.balance).map(inv => {
-                const custOpen = S.expandedCustomers.has(inv.invoiceId);
-                const searchBlob = [
-                  inv.customerName, inv.displayName, inv.invoiceNum,
-                  inv.email, inv.agentName, inv.officeName,
-                  ...(inv.itemNames || [])
-                ].filter(Boolean).join(' ').toLowerCase();
+                const invOpen = S.expandedInvoices.has(inv.invoiceId);
+                const itemLabel = inv.itemNames.join(', ') || 'No item';
                 return `
-                  <div class="customer-row ${custOpen?'open':''}" data-search="${esc(searchBlob)}" onclick="toggleCustomer('${inv.invoiceId}')">
-                    <div class="cust-chevron">▶</div>
+                  <div class="inv-item-row ${invOpen?'open':''}" onclick="toggleInvoice('${inv.invoiceId}')">
+                    <div class="inv-chevron">▶</div>
                     <div>
-                      <span class="cust-name">${inv.customerName}</span>
-                      ${inv.isAgentCust
-                        ? '<span class="cust-tag">Agent</span>'
-                        : '<span class="cust-tag non-agent">Non-Agent</span>'}
+                      <span style="font-weight:600;font-size:12px">${itemLabel}</span>
                       <div style="font-size:11px;color:var(--text3);margin-top:1px">#${inv.invoiceNum}</div>
                     </div>
-                    <div style="font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px" title="${inv.email||''}">${inv.email||'—'}</div>
+                    <div style="font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${inv.lineItems.map(l=>l.description).join(', ')}">${inv.lineItems.map(l=>l.description).join(', ') || '-'}</div>
                     <div class="money ${inv.balance>=5000?'red':inv.balance>=1000?'orange':'normal'}">${fmt$(inv.balance)}</div>
                     <div>${daysBadge(inv.daysOut)}</div>
                     <div style="font-size:12px;color:var(--text2)">${inv.dueDate}</div>
+                    <div style="font-size:12px;color:var(--text2)">${inv.agentName||'-'}</div>
                     <div>
                       <button class="btn btn-outline" style="padding:4px 9px;font-size:11px"
                         onclick="event.stopPropagation();openEmail('${inv.invoiceId}')">✉</button>
                     </div>
-                    <div style="font-size:12px;color:var(--text2)">${inv.agentName||'—'}</div>
                   </div>
-                  ${custOpen ? invoiceDetail(inv) : ''}`;
+                  ${invOpen ? invoiceDetail(inv) : ''}`;
               }).join('')}
             </div>`;
+
           return `
-            <div class="item-group-row ${itemOpen?'open':''}" onclick="toggleItem('${esc(itemKey)}')">
-              <div class="item-group-chevron">▶</div>
-              <div class="item-group-name">${iName}</div>
-              <div class="item-group-bar-wrap">
-                <div class="item-group-bar"><div class="item-group-bar-fill" style="width:${(itemTotal/maxItemTotal*100).toFixed(1)}%"></div></div>
+            <div class="cust-group-row ${custOpen?'open':''}" data-search="${esc(searchBlob)}" onclick="toggleCustGroup('${esc(custKey)}')">
+              <div class="cust-group-chevron">▶</div>
+              <div>
+                <span class="cust-group-name">${cName}</span>
+                ${isAgent
+                  ? '<span class="cust-tag">Agent</span>'
+                  : '<span class="cust-tag non-agent">Non-Agent</span>'}
+                <div class="cust-group-email">${invs[0]?.email || ''}</div>
               </div>
-              <div class="money" style="font-size:13px">${fmt$(itemTotal)}</div>
-              <div style="font-size:12px;color:var(--text3)">${invs.length} invoice${invs.length>1?'s':''}</div>
-              <div></div><div></div>
+              <div class="money ${custTotal>=5000?'red':custTotal>=1000?'orange':'normal'}" style="font-size:13px">${fmt$(custTotal)}</div>
+              <div style="font-size:12px;color:var(--text3)">${invs.length} inv${invs.length>1?'s':''}</div>
+              <div>${daysBadge(oldestDays)}</div>
+              <div></div>
             </div>
-            ${custHtml}`;
+            ${invHtml}`;
         }).join('')}
       </div>`;
 
@@ -605,7 +627,7 @@ function agingView() {
           <div style="width:20px"></div>
           <div class="bucket-total" style="color:var(--${b.totalClass})">${fmt$(bucketTotal)}</div>
         </div>
-        ${itemsHtml}
+        ${custsHtml}
       </div>`;
   }).join('');
 
@@ -616,6 +638,9 @@ function agingView() {
         <div class="panel-title">AR Aging Detail</div>
         <div class="panel-sub" id="panelSub">${invoices.length} open invoices</div>
         <div class="panel-spacer"></div>
+        <button class="btn btn-outline" style="font-size:11px;padding:5px 12px" onclick="toggleExpandAll()">
+          ${allExpanded ? '⊟ Collapse All' : '⊞ Expand All'}
+        </button>
         <input class="search-box" id="searchBox" placeholder="Search customer, invoice, agent..." value="${esc(S.search)}" autocomplete="off">
       </div>
       ${bucketsHtml}
@@ -629,10 +654,9 @@ function invoiceDetail(inv) {
       <td style="font-weight:600">${li.itemName}</td>
       <td style="color:var(--text2)">${li.description}</td>
       <td class="money">${fmt$(li.unitPrice)}</td>
-      <td style="color:var(--text3)">${li.className||'—'}</td>
+      <td style="color:var(--text3)">${li.className||'-'}</td>
     </tr>`).join('') || `<tr><td colspan="4" style="color:var(--text3)">No line items</td></tr>`;
 
-  // Group pending transactions by WS_ID (only for invoices that have an agent)
   const pending = inv.agentId ? (S.data.pendingByAgent?.[inv.agentId] || []) : [];
   const grouped = {};
   pending.forEach(p => {
@@ -644,7 +668,7 @@ function invoiceDetail(inv) {
   const uniqueTxCount = Object.keys(grouped).length;
   const pendingHtml = uniqueTxCount === 0 ? '' : `
     <div class="pending-section">
-      <div class="pending-title">⏳ Pending Transactions — ${inv.agentName} <span style="color:var(--text3);font-weight:500;margin-left:8px">${uniqueTxCount} transaction${uniqueTxCount===1?'':'s'} · ${pending.length} line item${pending.length===1?'':'s'}</span></div>
+      <div class="pending-title">⏳ Pending Transactions - ${inv.agentName} <span style="color:var(--text3);font-weight:500;margin-left:8px">${uniqueTxCount} transaction${uniqueTxCount===1?'':'s'} · ${pending.length} line item${pending.length===1?'':'s'}</span></div>
       ${Object.values(grouped).map(tx => {
         const totalAmt = tx.items.reduce((s,i) => s+i.amount, 0);
         return `
@@ -679,7 +703,7 @@ function invoiceDetail(inv) {
     ? `<span style="cursor:pointer;display:inline-flex;align-items:center;gap:5px" onclick="copyText('${esc(inv.email)}')" title="Click to copy">
         ${inv.email} <span style="font-size:10px;color:var(--text3)">⧉</span>
        </span>`
-    : '—';
+    : '-';
 
   return `
     <div class="invoice-detail slide-in">
@@ -690,7 +714,7 @@ function invoiceDetail(inv) {
           <div class="detail-row"><span class="detail-key">Due Date</span><span class="detail-val">${inv.dueDate}</span></div>
           <div class="detail-row"><span class="detail-key">Created</span><span class="detail-val">${inv.createdAt}</span></div>
           <div class="detail-row"><span class="detail-key">Balance Due</span><span class="detail-val" style="color:var(--red)">${fmt$(inv.balance)}</span></div>
-          <div class="detail-row"><span class="detail-key">QB Email Status</span><span class="detail-val">${inv.emailStatus||'—'}</span></div>
+          <div class="detail-row"><span class="detail-key">QB Email Status</span><span class="detail-val">${inv.emailStatus||'-'}</span></div>
         </div>
         <div>
           <div class="detail-section-title">Customer</div>
@@ -698,7 +722,7 @@ function invoiceDetail(inv) {
           <div class="detail-row"><span class="detail-key">Email</span><span class="detail-val" style="font-size:11px">${copyableEmail}</span></div>
           <div class="detail-row"><span class="detail-key">Total Customer Balance</span><span class="detail-val">${fmt$(inv.custBalance)}</span></div>
           <div class="detail-row"><span class="detail-key">Agent</span><span class="detail-val">${inv.agentName||'<span style="color:var(--text3)">Non-Agent</span>'}</span></div>
-          <div class="detail-row"><span class="detail-key">Office</span><span class="detail-val" style="font-size:11px">${inv.officeName||'—'}</span></div>
+          <div class="detail-row"><span class="detail-key">Office</span><span class="detail-val" style="font-size:11px">${inv.officeName||'-'}</span></div>
         </div>
         <div>
           <div class="detail-section-title">AR Notes</div>
@@ -723,10 +747,8 @@ function invoiceDetail(inv) {
 
 // ── AGENT VIEW ────────────────────────────────────────────────
 function agentView() {
-  // Include ALL groups (agent + __unassigned__ non-agent bucket)
   const agents = S.data.agents;
   const sorted = [...agents].sort((a,b) => {
-    // Pin Non-Agent / Unassigned to bottom regardless of sort
     if (!a.agentId && b.agentId) return 1;
     if (a.agentId && !b.agentId) return -1;
     let av = a[S.sortAgent.col], bv = b[S.sortAgent.col];
@@ -751,11 +773,10 @@ function agentView() {
     const pct = (a.totalAR / maxAR * 100).toFixed(1);
     const color = a.totalAR > 10000 ? 'var(--red)' : a.totalAR > 5000 ? 'var(--orange)' : 'var(--green)';
     const isUnassigned = !a.agentId;
-    // pendingCount is the unique-WS_ID count from backend; fall back to row count if backend is older
     const pc = typeof a.pendingCount === 'number' ? a.pendingCount : (a.pending ? a.pending.length : 0);
     const pendingBadge = pc > 0
       ? `<span style="background:var(--orange-lt);color:var(--orange);font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px">${pc} pending</span>`
-      : '<span style="color:var(--text3)">—</span>';
+      : '<span style="color:var(--text3)">-</span>';
     const searchBlob = [a.agentName, a.officeName].filter(Boolean).join(' ').toLowerCase();
 
     return `
@@ -770,7 +791,7 @@ function agentView() {
         </td>
         <td class="money">${a.invoiceCount}</td>
         <td class="money">${a.customerCount}</td>
-        <td>${isUnassigned ? '<span style="color:var(--text3)">—</span>' : pendingBadge}</td>
+        <td>${isUnassigned ? '<span style="color:var(--text3)">-</span>' : pendingBadge}</td>
         <td><button class="btn btn-outline" style="font-size:11px;padding:5px 10px" onclick="event.stopPropagation();drillAgent('${esc(a.agentName)}', ${isUnassigned})">View Invoices →</button></td>
       </tr>`;
   }).join('');
@@ -804,7 +825,7 @@ function settingsView() {
     <div class="panel fade-in" style="max-width:720px">
       <div class="panel-header">
         <div class="panel-title">⚙ Email Template Settings</div>
-        <div class="panel-sub">Saved in your browser — persists across sessions</div>
+        <div class="panel-sub">Saved in your browser - persists across sessions</div>
       </div>
       <div style="padding:24px;display:flex;flex-direction:column;gap:18px">
         <div class="settings-field">
@@ -880,7 +901,7 @@ function openEmail(invoiceId) {
     .replace(/\{\{customerName\}\}/g, inv.customerName).replace(/\{\{invoiceNum\}\}/g, inv.invoiceNum)
     .replace(/\{\{balance\}\}/g, fmt$(inv.balance)).replace(/\{\{dueDate\}\}/g, inv.dueDate||'')
     .replace(/\{\{dueDateLine\}\}/g, dueDateLine).replace(/\{\{itemList\}\}/g, itemList);
-  document.getElementById('modalSub').textContent = `Invoice #${inv.invoiceNum} — ${inv.customerName}`;
+  document.getElementById('modalSub').textContent = `Invoice #${inv.invoiceNum} - ${inv.customerName}`;
   document.getElementById('emailTo').value      = inv.email || '';
   document.getElementById('emailSubject').value = subject;
   document.getElementById('emailBody').value    = body + '\n\n' + t.signature;
@@ -916,9 +937,7 @@ function copyText(text) {
   });
 }
 
-// ── LIVE SEARCH (stable, no focus loss) ───────────────────────
-// The search input stays mounted across renders. We filter via CSS
-// visibility on each row instead of re-rendering the panel.
+// ── LIVE SEARCH ───────────────────────────────────────────────
 function bindSearch() {
   const box = document.getElementById('searchBox');
   if (!box) return;
@@ -946,18 +965,19 @@ function applySearch() {
     return;
   }
 
-  if (S.view === 'settings') return; // no search on settings
+  if (S.view === 'settings') return;
 
-  // Aging view — hide/show customer rows plus their adjacent detail panel
-  const rows = document.querySelectorAll('.customer-row');
+  // Aging view: hide/show customer group rows + their child sections
+  const rows = document.querySelectorAll('.cust-group-row');
   let visible = 0;
   rows.forEach(r => {
     const blob = r.getAttribute('data-search') || '';
     const hit  = !q || blob.includes(q);
     r.classList.toggle('hit-hidden', !hit);
-    const detail = r.nextElementSibling;
-    if (detail && detail.classList.contains('invoice-detail')) {
-      detail.classList.toggle('hit-hidden', !hit);
+    // Also hide/show the inv-item-section right after
+    let next = r.nextElementSibling;
+    if (next && next.classList.contains('inv-item-section')) {
+      next.classList.toggle('hit-hidden', !hit);
     }
     if (hit) visible++;
   });
@@ -974,7 +994,7 @@ function updatePanelSub(visible, total) {
   } else {
     sub.textContent = visible === total
       ? `${total} open invoices`
-      : `${visible} of ${total} invoices match`;
+      : `${visible} of ${total} customers match`;
   }
 }
 
@@ -988,7 +1008,7 @@ function getBucket(days) {
 }
 
 function daysBadge(days) {
-  if (days === null || days === undefined) return '<span class="days-badge days-neg">—</span>';
+  if (days === null || days === undefined) return '<span class="days-badge days-neg">-</span>';
   if (days > 90) return `<span class="days-badge days-91">${days}d</span>`;
   if (days > 60) return `<span class="days-badge days-61">${days}d</span>`;
   if (days > 30) return `<span class="days-badge days-31">${days}d</span>`;
@@ -1007,7 +1027,6 @@ function esc(s) {
     .replace(/"/g,'&quot;');
 }
 
-// STRUCTURAL filters only (item, agent). Search applied separately via applySearch().
 function filteredInvoices() {
   let list = S.data.invoices;
   if (S.itemFilter) list = list.filter(i => i.itemNames.includes(S.itemFilter));
@@ -1022,9 +1041,18 @@ function filteredInvoices() {
 }
 
 // ── EVENT HANDLERS ────────────────────────────────────────────
-function toggleBucket(key) { S.expandedBuckets.has(key) ? S.expandedBuckets.delete(key) : S.expandedBuckets.add(key); refreshContent(); }
-function toggleItem(key)   { S.expandedItems.has(key)   ? S.expandedItems.delete(key)   : S.expandedItems.add(key);   refreshContent(); }
-function toggleCustomer(id){ S.expandedCustomers.has(id)? S.expandedCustomers.delete(id): S.expandedCustomers.add(id);refreshContent(); }
+function toggleBucket(key) {
+  S.expandedBuckets.has(key) ? S.expandedBuckets.delete(key) : S.expandedBuckets.add(key);
+  refreshContent();
+}
+function toggleCustGroup(key) {
+  S.expandedCustomers.has(key) ? S.expandedCustomers.delete(key) : S.expandedCustomers.add(key);
+  refreshContent();
+}
+function toggleInvoice(id) {
+  S.expandedInvoices.has(id) ? S.expandedInvoices.delete(id) : S.expandedInvoices.add(id);
+  refreshContent();
+}
 function toggleItemFilter(name) { S.itemFilter = S.itemFilter === name ? null : name; rerender(); }
 function filterByAgent(name) { S.agentFilter = name; S.view = 'aging'; rerender(); }
 function drillAgent(name, isUnassigned) {
@@ -1036,6 +1064,36 @@ function drillAgent(name, isUnassigned) {
 function sortAgent(col) {
   S.sortAgent.dir = S.sortAgent.col === col ? S.sortAgent.dir * -1 : -1;
   S.sortAgent.col = col;
+  refreshContent();
+}
+
+// ── EXPAND / COLLAPSE ALL ─────────────────────────────────────
+function toggleExpandAll() {
+  const invoices = filteredInvoices();
+  const bucketed = {};
+  BUCKETS.forEach(b => { bucketed[b.key] = {}; });
+  invoices.forEach(inv => {
+    const b = getBucket(inv.daysOut);
+    if (!bucketed[b]) return;
+    const cName = inv.customerName || 'Unknown';
+    if (!bucketed[b][cName]) bucketed[b][cName] = [];
+    bucketed[b][cName].push(inv);
+  });
+
+  const activeBucketKeys = BUCKETS.map(b => b.key).filter(k => {
+    return Object.entries(bucketed[k]).flatMap(([,invs]) => invs).length > 0;
+  });
+  const allExpanded = activeBucketKeys.length > 0 && activeBucketKeys.every(k => S.expandedBuckets.has(k));
+
+  if (allExpanded) {
+    // Collapse all
+    S.expandedBuckets.clear();
+    S.expandedCustomers.clear();
+    S.expandedInvoices.clear();
+  } else {
+    // Expand all buckets (customer groups stay collapsed for readability)
+    activeBucketKeys.forEach(k => S.expandedBuckets.add(k));
+  }
   refreshContent();
 }
 </script>
